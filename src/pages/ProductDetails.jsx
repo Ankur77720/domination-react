@@ -12,13 +12,11 @@ function ProductDetails() {
 
 
     const handlePayment = useCallback(async () => {
-        const order = (await axios.get('http://localhost:4000/user/order/' + product._id, {
+        const order = (await axios.get('https://domination-lx2e.onrender.com/user/order/' + product._id, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         })).data.order
-
-        console.log(order)
 
         const options = {
             key: "rzp_test_cAa3gCF0eP8i4R",
@@ -30,7 +28,7 @@ function ProductDetails() {
             order_id: order.id,
             handler: async (res) => {
 
-                const response = await axios.post('http://localhost:4000/user/verify/' + order.id, {
+                const response = await axios.post('https://domination-lx2e.onrender.com/user/verify/' + order.id, {
                     paymentId: res.razorpay_payment_id, orderId: res.razorpay_order_id, signature: res.razorpay_signature
                 }, {
                     headers: {
