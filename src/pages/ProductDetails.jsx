@@ -1,13 +1,65 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
+import useRazorpay from "react-razorpay";
 import axios from 'axios'
 
 
 function ProductDetails() {
 
-
+    const [ Razorpay ] = useRazorpay();
     const location = useLocation()
     const product = location.state.product
+
+
+    const handlePayment = useCallback(async () => {
+        const order = (await axios.get('http://localhost:4000/user/order/' + product._id, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })).data.order
+
+        console.log(order)
+
+        const options = {
+            key: "rzp_test_cAa3gCF0eP8i4R",
+            amount: order.amount,
+            currency: order.currency,
+            name: "Acme Corp",
+            description: "Test Transaction",
+            image: "https://example.com/your_logo",
+            order_id: order.id,
+            handler: async (res) => {
+
+                const response = await axios.post('http://localhost:4000/user/verify/' + order.id, {
+                    paymentId: res.razorpay_payment_id, orderId: res.razorpay_order_id, signature: res.razorpay_signature
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                })
+
+                console.log(response)
+
+            },
+
+
+            prefill: {
+                name: "Piyush Garg",
+                email: "youremail@example.com",
+                contact: "9999999999",
+            },
+            notes: {
+                address: "Razorpay Corporate Office",
+            },
+            theme: {
+                color: "#3399cc",
+            },
+        };
+
+        const rzpay = new Razorpay(options);
+        rzpay.open();
+    }, [ Razorpay ]);
+
     return (
 
         <main
@@ -26,6 +78,7 @@ function ProductDetails() {
 
                 <button
                     className='bg-blue-500 text-white p-2 rounded-md'
+                    onClick={handlePayment}
                 >
                     Buy now
                 </button>
